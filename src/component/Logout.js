@@ -6,7 +6,7 @@ function Logout(props) {
   const hello = (value) => {
       console.log(value);
   }
-  
+   
   return (
     <div>
         <Button variant="primary"  onClick={handleLogout}>

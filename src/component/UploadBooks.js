@@ -1,24 +1,21 @@
-import {
-  Button,
-  FormControl,
-  InputAdornment,
-  InputLabel,
-  makeStyles,
-  OutlinedInput,
-  TextField,
-  Grid,
-} from "@material-ui/core";
+import { makeStyles } from "@material-ui/core";
 import fire from "../firebase";
 import React from "react";
 import BookCard from "./Card";
 import firebase from "firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import {
+  Container,
+  Form,
+  Button,
+  ProgressBar,
+  InputGroup,
+  FormControl,
+  Badge,
+} from "react-bootstrap";
 // import {} from "react-";
 const useStyles = makeStyles((theme) => ({
-  root: {
-    display: "flex",
-    flexWrap: "wrap",
-  },
-  margin:{
+  margin: {
     margin: theme.spacing(3),
     width: "30ch",
   },
@@ -28,11 +25,12 @@ const useStyles = makeStyles((theme) => ({
   submit: {
     margin: theme.spacing(3),
     width: "30ch",
-    display:"block"
+    display: "block",
   },
 }));
 
 export default function UploadBooks(props) {
+  const [User] = useAuthState(fire.auth());
   const [files, setFiles] = React.useState([]);
   const [BookName, setBookName] = React.useState([]);
   const [Amount, setAmount] = React.useState([]);
@@ -41,6 +39,7 @@ export default function UploadBooks(props) {
   const [About, setAbout] = React.useState([]);
   const [Published, setPublished] = React.useState([]);
   const [imageURL, setImageURL] = React.useState("");
+  const [progress, setProgress] = React.useState(0);
   const classes = useStyles();
   const setImage = (e) => {
     console.log(e.target.files);
@@ -72,8 +71,7 @@ export default function UploadBooks(props) {
       "state_changed", // or 'state_changed'
       function (snapshot) {
         // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log("Upload is " + progress + "% done");
+        setProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
         switch (snapshot.state) {
           case "paused": // or 'paused'
             console.log("Upload is paused");
@@ -124,7 +122,7 @@ export default function UploadBooks(props) {
         Published: Published,
         imageURL: url,
         UploadDate: firebase.firestore.FieldValue.serverTimestamp(),
-        UserID: props.id,
+        UserID: User.uid,
       })
       .then((docRef) => {
         setBookName("");
@@ -135,127 +133,95 @@ export default function UploadBooks(props) {
         setImageURL("");
         setPublished("");
         setPublisher("");
+        setProgress(0);
       })
       .catch((err) => alert(err));
   };
   return (
     <div>
-      {/* <Grid
-        container
-        spacing={3}
-        direction="column"
-        justify="center"
-        alignItems="stretch"
-      > */}
-        {/* <Grid item xs> */}
-          <TextField
-            required
-            id="BookName"
-            label="Book Name"
-            variant="outlined"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            className={classes.margin}
-            onChange={(e) => setBookName(e.target.value)}
-          />
-        {/* </Grid> */}
-        {/* <Grid item xs> */}
-          <FormControl fullWidth className={classes.margin} variant="outlined">
-            <InputLabel htmlFor="outlined-adornment-amount">Amount</InputLabel>
-            <OutlinedInput
-              id="outlined-adornment-amount"
-              startAdornment={
-                <InputAdornment position="start">Rs.</InputAdornment>
-              }
-              labelWidth={60}
+      {User?
+      <Container>
+        <h2>
+          <Badge style={{display: "flex",justifyContent:"center",justifyItems:"center" }} variant="secondary">Enter Book details</Badge>
+        </h2><br/><br/><br/>
+        <Form>
+          <Form.Group controlId="formBasicEmail">
+            <Form.Label>Book name</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter Name"
+              onChange={(e) => setBookName(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group controlId="formBasicPassword">
+            <Form.Label>Author's Name</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter Author's Name"
+              onChange={(e) => setAuthor(e.target.value)}
+            />
+          </Form.Group>
+          <label htmlFor="basic-url">Amount</label>
+          <InputGroup className="mb-3">
+            <InputGroup.Prepend>
+              <InputGroup.Text id="basic-addon1">₹</InputGroup.Text>
+            </InputGroup.Prepend>
+            <FormControl
+              placeholder="Amount"
+              aria-label="Username"
+              aria-describedby="basic-addon1"
+            />
+          </InputGroup>
+          <Form.Group controlId="formBasicPassword">
+            <Form.Label>Publisher</Form.Label>
+            <Form.Control
+              type="textr"
+              placeholder="Enter publisher name"
+              onChange={(e) => setPublisher(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group controlId="formBasicPassword">
+            <Form.Label>Published on</Form.Label>
+            <Form.Control
+              type="Date"
+              placeholder="published On"
+              onChange={(e) => setPublished(e.target.valueAsDate)}
+            />
+          </Form.Group>
+          <Form.Group controlId="formBasicPassword">
+            <Form.Label>About</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter in breif about book condition"
               onChange={(e) => setAmount(e.target.value)}
             />
-          </FormControl>
-        {/* </Grid> */}
-        {/* <Grid item xs> */}
-          <TextField
-            required
-            id="Author"
-            label="Author's Name"
-            variant="outlined"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            className={classes.margin}
-            onChange={(e) => setAuthor(e.target.value)}
-          />
-        {/* </Grid> */}
-        {/* <Grid item xs> */}
-          <TextField
-            id="Publisher"
-            label="Publisher"
-            defaultValue=""
-            variant="outlined"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            className={classes.margin}
-            onChange={(e) => setPublisher(e.target.value)}
-          />
-        {/* </Grid> */}
-        {/* <Grid item xs> */}
-          <TextField
-            id="date"
-            label="Published on"
-            type="date"
-            variant="outlined"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            className={classes.margin}
-            onChange={(e) => setPublished(e.target.valueAsDate)}
-          />
-        {/* </Grid> */}
-        {/* <Grid item xs> */}
-          <TextField
-            id="About"
-            label="About"
-            multiline
-            rows={4}
-            defaultValue=""
-            variant="outlined"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            className={classes.margin}
-            onChange={(e) => setAbout(e.target.value)}
-          />
-        {/* </Grid> */}
-        {/* <Grid item xs> */}
-          <Button variant="contained" className={classes.margin} component="label">
-            Upload File
-            <input
+          </Form.Group>
+
+          <Form.Group controlId="formBasicPassword">
+            <Form.Label>Book Image</Form.Label>
+            <Form.Control
               type="file"
-              name="picture"
-              hidden
-              
-              onChange={(e) => setImage(e)}
+              placeholder="Enter in breif about book condition"
+              onChange={(e) => setAmount(e.target.value)}
             />
+            <Form.Text>file size Should be less then 1.2MB</Form.Text>
+          </Form.Group>
+          <Button variant="primary" onClick={onSubmit}>
+            Save
           </Button>
-        {/* </Grid> */}
-        {/* <Grid item xs> */}
-         
-        {/* </Grid> */}
-      {/* </Grid> */}
-      <Button variant="contained" color="primary" className={classes.submit} onClick={onSubmit}>
-            Submit
-          </Button>
-      <BookCard
-        name={BookName}
-        about={About}
-        date={Published}
-        amount={Amount}
-        publisher={Publisher}
-        auther={Author}
-        imageURL={imageURL}
-        UploadDate={parseInt(new Date() / 1000)}
-      ></BookCard>
+        </Form>
+        {progress === 0 ? <div /> : <ProgressBar now={progress} />}
+        <BookCard
+          name={BookName}
+          about={About}
+          date={Published}
+          amount={Amount}
+          publisher={Publisher}
+          auther={Author}
+          imageURL={imageURL}
+          UploadDate={parseInt(new Date() / 1000)}
+        ></BookCard>
+      </Container>:<div>Login First</div>}
     </div>
   );
 }

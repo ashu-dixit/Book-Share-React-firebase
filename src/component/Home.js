@@ -7,6 +7,7 @@ const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
     flexWrap: "wrap",
+    justifyContent:"center",
     margin:theme.spacing(3)
   },
   margin:{
@@ -21,18 +22,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Home(props) {
   const [bookList, setBookList] = useState([]);
-  const [ref, seRef] = useState(fire.firestore().collection('books'));
-  var [unsubscribe, setUnsubscribe] = useState(null)
-  const classes = useStyles();
-  const getbooks = () => {
-    const ref = fire.firestore().collection('books')
-  }
-  useEffect(() => {
-
-    unsubscribe = ref.orderBy("UploadDate").limit(10).onSnapshot(onCollectionUpdate)
-    // ref.get().then(onCollectionUpdate)
-    // console.log("Hello")
-  }, []);
+  const [ref, ] = useState(fire.firestore().collection('books'));
   const onCollectionUpdate = (querySnapshot) => {
     var books = []
     querySnapshot.forEach((doc) => {
@@ -42,10 +32,18 @@ export default function Home(props) {
     })
     setBookList(books)
   }
+  useEffect(() => {
+    ref
+       .orderBy("UploadDate")
+       .limit(10)
+       .onSnapshot(onCollectionUpdate);
+   }, []);
+  const classes = useStyles();
   return (
     <div class={classes.root}>
       {bookList.map((book) => (
         <BookCard
+          id={book.id}
           key={book.id}
           name={book.BookName}
           about={book.About}
@@ -55,6 +53,7 @@ export default function Home(props) {
           auther = {book.Auther}
           imageURL={book.imageURL}
           date={book.uploadDate}
+          chatoption={true}
         ></BookCard>
       ))}
     </div>

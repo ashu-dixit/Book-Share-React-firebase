@@ -1,158 +1,64 @@
-import React from "react";
-import { makeStyles, useTheme } from "@material-ui/core/styles";
-import Drawer from "@material-ui/core/Drawer";
-import List from "@material-ui/core/List";
-import Divider from "@material-ui/core/Divider";
-import IconButton from "@material-ui/core/IconButton";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import Home from "@material-ui/icons/Home";
-import MailIcon from "@material-ui/icons/Mail";
-import { NavLink } from "react-router-dom";
-import Books from "@material-ui/icons/Book";
-import Profile from "@material-ui/icons/AccountBox";
+import React, { useCallback } from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import BottomNavigation from "@material-ui/core/BottomNavigation";
+import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
+import HomeIcon from "@material-ui/icons/Home";
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
+import { useHistory } from "react-router-dom";
+import PersonIcon from '@material-ui/icons/Person';
+import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
+const useStyles = makeStyles({
+  root: {
+    width: "100%",
+    position: "fixed",
+    bottom: 0,
+  },
+});
 
-const drawerWidth = 240;
-
-const useStyles = makeStyles((theme) => ({
-  title: {
-    flexGrow: 1,
-  },
-  appBarShift: {
-    width: `calc(100% - ${drawerWidth}px)`,
-    marginLeft: drawerWidth,
-    transition: theme.transitions.create(["margin", "width"], {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
-  hide: {
-    display: "none",
-  },
-  drawer: {
-    width: drawerWidth,
-    flexShrink: 0,
-  },
-  drawerPaper: {
-    width: drawerWidth,
-  },
-  drawerHeader: {
-    display: "flex",
-    alignItems: "center",
-    padding: theme.spacing(0, 1),
-    // necessary for content to be below app bar
-    ...theme.mixins.toolbar,
-    justifyContent: "flex-end",
-  },
-  content: {
-    flexGrow: 1,
-    padding: theme.spacing(3),
-    transition: theme.transitions.create("margin", {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    marginLeft: -drawerWidth,
-  },
-  contentShift: {
-    transition: theme.transitions.create("margin", {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    marginLeft: 0,
-  },
-  active_class: {
-    color: "green",
-    textDecorationLine: "none",
-  },
-  linktag: {
-    color: "black",
-    textDecorationLine: "none",
-  },
-}));
-
-export default function Menu(props) {
+export default function LabelBottomNavigation() {
   const classes = useStyles();
-  const theme = useTheme();
+  const history = useHistory();
+  const HomeOnClick = useCallback(() => history.push("/"), [history]);
+  const UploadOnClick = useCallback(() => history.push("/upload"), [history]);
+  const ProfileOnClick = useCallback(() => history.push("/profile"), [history]);
+  const FavoriteOnClick = useCallback(() => history.push("/post"), [history]);
+
+  const [value, setValue] = React.useState("recents");
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
 
   return (
-    <Drawer
-      className={classes.drawer}
-      variant="persistent"
-      anchor="left"
-      open={props.open}
-      classes={{
-        paper: classes.drawerPaper,
-      }}
+    <BottomNavigation
+      value={value}
+      className={classes.root}
+      onChange={handleChange}
     >
-      <div className={classes.drawerHeader}>
-        <IconButton onClick={props.handleDrawerClose}>
-          {theme.direction === "ltr" ? (
-            <ChevronLeftIcon />
-          ) : (
-            <ChevronRightIcon />
-          )}
-        </IconButton>
-      </div>
-      <Divider />
-      <List>
-        <NavLink
-          to="/"
-          activeClassName={classes.active_class}
-          className={classes.linktag}
-        >
-          <ListItem button>
-            <ListItemIcon>
-              <Home/>
-            </ListItemIcon>
-            <ListItemText primary={"Home"} />
-          </ListItem>
-        </NavLink>
-        <NavLink
-          to="/mybooks"
-          activeClassName={classes.active_class}
-          className={classes.linktag}
-        >
-          <ListItem button>
-            <ListItemIcon>
-              <Books />
-            </ListItemIcon>
-            <ListItemText primary={"My Books"} />
-          </ListItem>
-        </NavLink>
-        <NavLink
-          to="/profile"
-          activeClassName={classes.active_class}
-          className={classes.linktag}
-        >
-          <ListItem button>
-            <ListItemIcon>
-              <Profile />
-            </ListItemIcon>
-            <ListItemText primary={"Profile"} />
-          </ListItem>
-        </NavLink>
-      </List>
-      <Divider />
-      <List>
-        <NavLink
-          to="/upload"
-          activeClassName={classes.active_class}
-          className={classes.linktag}
-        >
-          <ListItem button>
-            <ListItemIcon>
-              <Books />
-            </ListItemIcon>
-            <ListItemText primary={"Upload Book"} />
-          </ListItem>
-        </NavLink>
-      </List>
-    </Drawer>
+      <BottomNavigationAction
+        label="Home"
+        value="Value"
+        icon={<HomeIcon />}
+        onClick={HomeOnClick}
+      />
+        <BottomNavigationAction
+          label="Post"
+          value="post"
+          icon={<AssignmentOutlinedIcon />}
+          onClick={FavoriteOnClick}
+        />
+      <BottomNavigationAction
+        label="Upload"
+        value="upload"
+        icon={<AddCircleOutlineIcon/>}
+        onClick={UploadOnClick}
+      />
+      <BottomNavigationAction
+        label="Profile"
+        value="profile"
+        icon={<PersonIcon />}
+        onClick={ProfileOnClick}
+      />
+    </BottomNavigation>
   );
 }

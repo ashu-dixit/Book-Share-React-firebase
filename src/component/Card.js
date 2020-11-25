@@ -1,123 +1,143 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import clsx from 'clsx';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardMedia from '@material-ui/core/CardMedia';
-import CardContent from '@material-ui/core/CardContent';
-import CardActions from '@material-ui/core/CardActions';
-import Avatar from '@material-ui/core/Avatar';
-import IconButton from '@material-ui/core/IconButton';
-import Typography from '@material-ui/core/Typography';
-import { red } from '@material-ui/core/colors';
-import FavoriteIcon from '@material-ui/icons/Favorite';
-import ShareIcon from '@material-ui/icons/Share';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-
+import React, { useState } from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import IconButton from "@material-ui/core/IconButton";
+import FavoriteIcon from "@material-ui/icons/Favorite";
+import { Card, Col, Container, Modal, Row, Button } from "react-bootstrap";
+import { useAuthState } from "react-firebase-hooks/auth";
+import fire from "../firebase";
+import firebase from "firebase";
+import clsx from "clsx";
 const useStyles = makeStyles((theme) => ({
   root: {
-    maxWidth: 345,
-    margin:theme.spacing(3)
+    width: "34ch",
+    margin: theme.spacing(3),
   },
   media: {
-    height: 0,
-    paddingTop: '56.25%', // 16:9
+    height: 4,
+    paddingTop: "56.25%", // 16:9
   },
   expand: {
-    transform: 'rotate(0deg)',
-    marginLeft: 'auto',
-    transition: theme.transitions.create('transform', {
+    transform: "rotate(0deg)",
+    marginLeft: "auto",
+    transition: theme.transitions.create("transform", {
       duration: theme.transitions.duration.shortest,
     }),
   },
   expandOpen: {
-    transform: 'rotate(180deg)',
+    transform: "rotate(180deg)",
   },
-  avatar: {
-    backgroundColor: red[500],
+  icon:{
+    
   },
+  iconColor:{
+    color:"Red"
+  }
 }));
 
 export default function BookCard(props) {
   const classes = useStyles();
-  const [expanded, setExpanded] = React.useState(false);
-
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
+  const [modalShow, setModalShow] = useState(false);
+  const startChat = () => {};
+  const [User] = useAuthState(fire.auth());
+  const userRef = fire.firestore().collection("users");
+  const [open, setOpen] = useState(false)
+  const AddTofavorite = () => {
+    userRef
+      .where("UserID", "==", "" + User.uid)
+      .limit(1)
+      .get()
+      .then(function (querySnapshot) {
+        querySnapshot.forEach(function (doc) {
+          fire
+            .firestore()
+            .collection("users")
+            .doc(doc.id)
+            .update({
+              favorite: firebase.firestore.FieldValue.arrayUnion(props.id),
+            });
+          // console.log(doc.id, " => ", doc.data());
+        });
+        setOpen(!open)
+      });
+    // userRef.doc(User.uid).update({
+    //   favorite: firebase.firestore.FieldValue.arrayUnion(props.id)
+    // });
   };
 
   return (
-    <Card className={classes.root}>
-      <CardHeader
-        avatar={
-          <Avatar aria-label="recipe" className={classes.avatar}>
-            R
-          </Avatar>
-        }
-        action={
-          <IconButton aria-label="settings">
-            <MoreVertIcon />
-          </IconButton>
-        }
-        title={props.name}
-        subheader={(new Intl.DateTimeFormat().format(props.UploadDate*1000))}
-      />
-      <CardMedia
-        className={classes.media}
-        image={props.imageURL}
-        title="Paella dish"
-      />
-      <CardContent>
-        <Typography variant="body2" color="textSecondary" component="p">
-          {props.about}
-        </Typography>
-      </CardContent>
-      <CardActions disableSpacing>
-        <IconButton aria-label="add to favorites">
-          <FavoriteIcon />
-        </IconButton>
-        <IconButton aria-label="share">
-          <ShareIcon />
-        </IconButton>
-        <IconButton
-          className={clsx(classes.expand, {
-            [classes.expandOpen]: expanded,
-          })}
-          onClick={handleExpandClick}
-          aria-expanded={expanded}
-          aria-label="show more"
-        >
-          <ExpandMoreIcon />
-        </IconButton>
-      </CardActions>
-      {/* <Collapse in={expanded} timeout="auto" unmountOnExit>
-        <CardContent>
-          <Typography paragraph>Method:</Typography>
-          <Typography paragraph>
-            Heat 1/2 cup of the broth in a pot until simmering, add saffron and set aside for 10
-            minutes. 
-          </Typography>
-          <Typography paragraph>
-            Heat oil in a (14- to 16-inch) paella pan or a large, deep skillet over medium-high
-            heat. Add chicken, shrimp and chorizo, and cook, stirring occasionally until lightly
-            browned, 6 to 8 minutes. Transfer shrimp to a large plate and set aside, leaving chicken
-            and chorizo in the pan. Add pimentón, bay leaves, garlic, tomatoes, onion, salt and
-            pepper, and cook, stirring often until thickened and fragrant, about 10 minutes. Add
-            saffron broth and remaining 4 1/2 cups chicken broth; bring to a boil.
-          </Typography>
-          <Typography paragraph>
-            Add rice and stir very gently to distribute. Top with artichokes and peppers, and cook
-            without stirring, until most of the liquid is absorbed, 15 to 18 minutes. Reduce heat to
-            medium-low, add reserved shrimp and mussels, tucking them down into the rice, and cook
-            again without stirring, until mussels have opened and rice is just tender, 5 to 7
-            minutes more. (Discard any mussels that don’t open.)
-          </Typography>
-          <Typography>
-            Set aside off of the heat to let rest for 10 minutes, and then serve.
-          </Typography>
-        </CardContent>
-      </Collapse> */}
+    <Card
+      style={{
+        width: "15rem",
+        display: "flex",
+        justifyContent: "center",
+        justifyItems: "center",
+      }}
+    >
+      <Card.Img variant="top" src={props.imageURL} />
+      <Card.Body>
+        <Card.Title>{props.name}</Card.Title>
+        <Card.Text>{props.about}</Card.Text>
+        <Card.Text>₹: {props.amount}</Card.Text>
+        {User ? (
+          props.chatoption ? (
+            <Container>
+              <Row>
+                <Col>
+                  <IconButton
+                    onClick={AddTofavorite}
+                    aria-label="add to favorites"
+                  >
+                    <FavoriteIcon
+                      className={clsx(classes.icon, {
+                        [classes.iconColor]: open,
+                      })}
+                    />
+                  </IconButton>
+                </Col>
+                <Col>
+                  <Button variant="primary" onClick={() => setModalShow(true)}>
+                    Chat
+                  </Button>
+                </Col>
+                <ChatWindow
+                  show={modalShow}
+                  modalShow={modalShow}
+                  setModalShow={() => setModalShow(false)}
+                />
+              </Row>
+            </Container>
+          ) : (
+            <Button
+              color="secondary"
+              onClick={() => props.deletePost(props.id)}
+            >
+              Delete
+            </Button>
+          )
+        ) : (
+          <div />
+        )}
+      </Card.Body>
     </Card>
+  );
+}
+
+function ChatWindow(props) {
+  return (
+    <Modal
+      show={props.modalShow}
+      onHide={props.setModalShow}
+      // dialogClassName="modal-90w"
+      size="lg"
+      centered
+    >
+      <Modal.Header closeButton>
+        <Modal.Title id="contained-modal-title-vcenter">
+          Message Box
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>Hello</Modal.Body>
+      <Modal.Footer></Modal.Footer>
+    </Modal>
   );
 }
